@@ -88,13 +88,20 @@ check_dependencies() {
         necessary_packages+=" libmpc-dev libgmp3-dev"
     fi
 
-    # Install the necessary packages
-    trap 'error_msg "Failed to install required dependencies."' ERR
-    [[ -n "$(dpkg -l | awk '{print $2}' | grep -w "^${necessary_packages}$")" ]] || {
-        echo -e "${INFO} Installing required dependencies..."
+    # Check which packages are missing
+    for pkg in ${necessary_packages}; do
+        if ! dpkg -s "$pkg" >/dev/null 2>&1; then
+            missing_packages+=("$pkg")
+        fi
+    done
+
+    # Install the missing packages
+    if [[ ${#missing_packages[@]} -gt 0 ]]; then
+        echo -e "${INFO} Installing missing dependencies..."
         apt-get update -y
-        apt-get install -y ${necessary_packages}
-    }
+        apt-get install -y "${missing_packages[@]}"
+    fi
+
     trap - ERR
 }
 
