@@ -94,22 +94,22 @@ inputs:
     required: false
     default: "false"
 outputs:
-  packaged_outputtags:
+  tags:
     description: "The tags of the built Armbian image."
-    value: ${{ steps.build.outputs.packaged_outputtags }}
-  packaged_outputpath:
+    value: ${{ steps.build.outputs.tags }}
+  output_path:
     description: "The output path of the built Armbian image."
-    value: ${{ steps.build.outputs.packaged_outputpath }}
-  packaged_outputdate:
+    value: ${{ steps.build.outputs.output_path }}
+  build_date:
     description: "The date when the Armbian image was built."
-    value: ${{ steps.build.outputs.packaged_outputdate }}
-  packaged_status:
+    value: ${{ steps.build.outputs.build_date }}
+  status:
     description: "The status of the build process."
-    value: ${{ steps.build.outputs.packaged_status }}
+    value: ${{ steps.build.outputs.status }}
 runs:
   using: "composite"
   steps:
-    - name: Build
+    - id: build
       shell: bash
       run: |
         STEPS="[\033[95m STEPS \033[0m]"
