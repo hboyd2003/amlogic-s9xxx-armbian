@@ -93,11 +93,24 @@ inputs:
     description: "Set whether to use silent log output"
     required: false
     default: "false"
-
+outputs:
+  packaged_outputtags:
+    description: "The tags of the built Armbian image."
+    value: ${{ steps.build.outputs.packaged_outputtags }}
+  packaged_outputpath:
+    description: "The output path of the built Armbian image."
+    value: ${{ steps.build.outputs.packaged_outputpath }}
+  packaged_outputdate:
+    description: "The date when the Armbian image was built."
+    value: ${{ steps.build.outputs.packaged_outputdate }}
+  packaged_status:
+    description: "The status of the build process."
+    value: ${{ steps.build.outputs.packaged_status }}
 runs:
   using: "composite"
   steps:
-    - shell: bash
+    - name: Build
+      shell: bash
       run: |
         cd ${{ github.action_path }}
         echo -e "Current running path: [ ${PWD} ]"
@@ -179,14 +192,14 @@ runs:
             sync && sleep 3
 
             cd ${{ github.action_path }}
-            echo -e "Output environment variables."
-            echo "PACKAGED_OUTPUTPATH=${PWD}/${armbian_filepath}" >> ${GITHUB_ENV}
-            echo "PACKAGED_OUTPUTDATE=$(date +"%m.%d.%H%M")" >> ${GITHUB_ENV}
-            echo "PACKAGED_STATUS=success" >> ${GITHUB_ENV}
-            echo -e "PACKAGED_OUTPUTPATH: ${PWD}/${armbian_filepath}"
-            echo -e "PACKAGED_OUTPUTDATE: $(date +"%m.%d.%H%M")"
-            echo -e "PACKAGED_STATUS: success"
-            echo -e "PACKAGED_OUTPUTPATH files list: \n$(ls -lh ${PWD}/${armbian_filepath}/ 2>/dev/null)"
+            echo -e "Output variables."
+            echo "output_path=${PWD}/${armbian_filepath}" >> ${GITHUB_OUTPUT}
+            echo "build_date=$(date +"%m.%d.%H%M")" >> ${GITHUB_OUTPUT}
+            echo "status=success" >> ${GITHUB_OUTPUT}
+            echo -e "output_path: ${PWD}/${armbian_filepath}"
+            echo -e "build_date: $(date +"%m.%d.%H%M")"
+            echo -e "status: success"
+            echo -e "output_path files list: \n$(ls -lh ${PWD}/${armbian_filepath}/ 2>/dev/null)"
 
         elif [[ "${build_target}" == "kernel" ]]; then
 
@@ -238,17 +251,17 @@ runs:
             sudo ./recompile ${make_command}
 
             cd ${{ github.action_path }}
-            output_tags="$(ls -l ${PWD}/${kernel_outpath}/*.tar.gz | awk '{print $9}' | grep -oE '[1-9][0-9]{0,2}\.[0-9]{1,3}\.[0-9]+' | xargs | tr "[ ]" "_")"
-            echo -e "Output environment variables."
-            echo "PACKAGED_OUTPUTTAGS=${output_tags}" >> ${GITHUB_ENV}
-            echo "PACKAGED_OUTPUTPATH=${PWD}/${kernel_outpath}" >> ${GITHUB_ENV}
-            echo "PACKAGED_OUTPUTDATE=$(date +"%m.%d.%H%M")" >> ${GITHUB_ENV}
-            echo "PACKAGED_STATUS=success" >> ${GITHUB_ENV}
-            echo -e "PACKAGED_OUTPUTTAGS: ${output_tags}"
-            echo -e "PACKAGED_OUTPUTPATH: ${PWD}/${kernel_outpath}"
-            echo -e "PACKAGED_OUTPUTDATE: $(date +"%m.%d.%H%M")"
-            echo -e "PACKAGED_STATUS: success"
-            echo -e "PACKAGED_OUTPUTPATH files list: \n$(ls -lh ${PWD}/${kernel_outpath}/ 2>/dev/null)"
+            tags="$(ls -l ${PWD}/${kernel_outpath}/*.tar.gz | awk '{print $9}' | grep -oE '[1-9][0-9]{0,2}\.[0-9]{1,3}\.[0-9]+' | xargs | tr "[ ]" "_")"
+            echo -e "Output variables."
+            echo "tags=${tags}" >> ${GITHUB_OUTPUT}
+            echo "output_path=${PWD}/${kernel_outpath}" >> ${GITHUB_OUTPUT}
+            echo "build_date=$(date +"%m.%d.%H%M")" >> ${GITHUB_OUTPUT}
+            echo "status=success" >> ${GITHUB_OUTPUT}
+            echo -e "tags: ${tags}"
+            echo -e "output_path: ${PWD}/${kernel_outpath}"
+            echo -e "build_date: $(date +"%m.%d.%H%M")"
+            echo -e "status: success"
+            echo -e "output_path files list: \n$(ls -lh ${PWD}/${kernel_outpath}/ 2>/dev/null)"
 
         else
             echo -e "Please select a build target: armbian / kernel"
